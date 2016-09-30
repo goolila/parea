@@ -1,0 +1,9 @@
+beautifulsoup4==4.5.1
+Django==1.9.8
+django-cors-headers==1.1.0
+django-debug-toolbar==1.5
+django-registration-redux==1.4
+djangorestframework==3.3.2
+lxml==3.6.1
+PyLD==0.7.1
+sqlparse==0.2.0

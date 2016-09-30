@@ -1,0 +1,51 @@
+{% extends "base12.html" %}
+
+{% block content %}
+<head>
+  <title>PAREA | Login</title>
+</head>
+
+
+<div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+  <div class="panel panel-info" >
+    <div class="panel-heading">
+      <div class="panel-title"><h4>Sign In</h4></div>
+      <div style="float:right; font-size: 80%; position: relative; top:-25px"><a href="{% url 'auth_password_reset' %}">Forgot password?</a></div>
+
+    </div>
+
+    <div style="padding-top:30px" class="panel-body">
+      <form id="loginform" class="form-horizontal" role="form" method="post" action="">
+      {% csrf_token %}
+      {% if form.errors %}
+      {% for field in form %}
+          {% for error in field.errors %}
+              <div class="alert alert-danger">
+                  <strong>{{ error|escape }}</strong>
+              </div>
+          {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+          <div class="alert alert-danger">
+              <strong>{{ error|escape }}</strong>
+          </div>
+      {% endfor %}
+      {% endif %}
+        <div style="margin-bottom: 25px" class="input-group">
+          <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+          <input id="login-username" type="text" class="form-control" name="username" value="" placeholder="username or email">
+        </div>
+        <div style="margin-bottom: 25px" class="input-group">
+          <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+          <input id="login-password" type="password" class="form-control" name="password" placeholder="password">
+        </div>
+
+        <input id="btn-login" href="#" class="btn btn-success" type="submit" value="Log in" />
+        <div style="float:right; font-size: 80%; position: relative; top:10px;"><p>Don't have an account? <a href="{% url 'registration_register' %}">Register here!</p></a></div>
+
+        <input type="hidden" name="next" value="{{ next }}" />
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

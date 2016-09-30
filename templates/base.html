@@ -1,0 +1,73 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" type="text/css" href="{% static 'conference/css/bootstrap.css' %}" />
+  <link rel="icon" href="{% static 'conference/icon.png' %}">
+
+  <script>
+  $( function() {
+    $( "#dialog" ).dialog();
+  } );
+  </script>
+
+{#  <script src="{% static 'conference/js/jquery.min.js' %}"></script>#}
+{#  <script src="{% static 'conference/RASH/js/rash.js' %}"></script>#}
+{#  <!-- <script src="{% static 'conference/RASH/css/rash.css' %}"></script> -->#}
+{#  <script src="{% static 'conference/RASH/js/bootstrap.min.js' %}"></script>#}
+{#  <script src="{% static 'conference/RASH/js/bootstrap.min.js' %}"></script>#}
+
+  {% block javascript %}{% endblock %}
+</head>
+
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+
+    <div class="navbar-header">
+      <a class="navbar-brand" href="{% url 'home' %}">
+        <img alt="Brand" src="{% static 'conference/parea.png' %}">
+      </a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-left">
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'events' %}">Events</a></li>
+        {% if request.user.is_authenticated %}
+        <li><a href="{% url 'paper_create' %}">Submit Paper</a></li>
+        {% endif %}
+        <li><a href="{% url 'about' %}">About us</a></li>
+        <li><a href="{% url 'help' %}"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span> Help</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        {% if request.user.is_authenticated %}
+          <li><a href="{% url 'profile' slug=request.user.username %} "><b>{{ request.user.username }}</b></a></li>
+          <li><a href="{% url 'logout' %}">Logout</a></li>
+        {% else %}
+          <li><a href="{% url 'registration_register' %}">Register</a></li>
+          <li><a href="{% url 'login' %}">Login</a></li>
+        {% endif %}
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+<div class="container">
+  <body>
+  <div clas="row">
+    <div class="col-md-3">
+      {% block sidebar %}
+      {% endblock %}
+    </div>
+    <div class="col-md-9">
+      {% block content %}
+      {% endblock %}
+    </div>
+
+  </div>
+  </body>
+</div>
+
+</html>

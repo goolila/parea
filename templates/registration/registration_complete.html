@@ -1,0 +1,10 @@
+{% extends "base12.html" %}
+{% load i18n %}
+
+{% block content %}
+<head>
+  <title>Welcome {{ object.username }}!</title>
+</head>
+<br>
+<h4>You're Awesome! Registrartion is completed and you're logged in.</h4><a href="{% url 'home' %}">Let's go home ></a>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base12.html" %}
+{% load humanize %}
+
+
+{% block content%}
+<head>
+  <title>PAREA | Events</title>
+</head>
+
+<div class="panel panel-info">
+  <div class="panel-heading">
+      <h3>Events</h3>
+  </div>
+
+  {% if events.count > 0 %}
+  <table class="table">
+    <tr>
+      <th>Event Name</th>
+      <th>Acronym</th>
+      <th>Cratead At</th>
+      <th>Status</th>
+    </tr>
+      {% for event in events %}
+        <tr>
+        <td style="min-width: 350px;"><a href="{% url 'event_detail' pk=event.id slug=event.slug %}">{{ event.name }}</a></td>
+        <td style="min-width: 100px;">{{ event.acronym }}</td>
+        <td>{{ event.create_date }}</td>
+        <td>{{ event.get_event_status_display }}</td>
+      {% endfor %}
+      </tr>
+    </table>
+  {% else %}
+    <div class="panel-body">
+        <h4>No Event Has Been Created Yet!</h4>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

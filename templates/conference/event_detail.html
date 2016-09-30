@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+
+
+{% block content %}
+<head>
+  <title>PAREA | {{ event.acronym }}</title>
+</head>
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+      <h3>
+        {{ event.name }} <small> {{ event.acronym }} </small>
+        {% if request.user.is_staff or request.user in chairs %}
+        <small><a href="{% url 'event_update' pk=object.pk %}">Edit</a></small>
+        {% endif %}
+      </h3>
+  </div>
+  <div class="panel-body">
+    {% if ready_to_be_closed %}
+      {% if event.is_open %}
+        <h4><a href="{% url 'event_close' pk=object.pk %}" class="btn btn-danger">CLOSE THIS EVENT</a>
+        <small> All annotations, reviews and decisions will be locked and written to paper files.</small></h4>
+      {% else %}
+        <h4 style="color:red;">CLOSED!
+          <small><a href="{% url 'event_download' pk=object.pk %}" class="btn-sm btn-info">Download zip file!</a></small>
+          {% if request.user.is_staff %}
+          <small>  <a href="{% url 'event_reopen' pk=object.pk %}" class="btn-sm btn-success">Reopen this event!</a></small>
+          {% endif %}
+        </h4>
+      {% endif %}
+    {% endif %}
+  </div>
+
+
+
+  <!-- Table -->
+  {% if papers.count > 0 %}
+  <table class="table">
+    <tr>
+      <th>Paper Title</th>
+      <th>Reviewers</th>
+      <th>Status</th>
+      {% if request.user in chairs or request.user in event.pc_members.all %}
+        <th>Reviews</th>
+      {% endif %}
+      {% if request.user in chairs  %}
+        <th>Decision</th>
+      {% endif %}
+    </tr>
+      {% for paper in papers %}
+          <tr>
+          <td><a href="{% url 'paper_detail' pk=paper.id slug=paper.slug %}">{{ paper.title }}</a></td>
+          <td style="min-width:150px">
+              {% for r in paper.reviewers.all %}
+                  <p>{{ r.username }} </p>
+              {% endfor %}
+          </td>
+          <td style="min-width:150px">{{ paper.get_status_display }}</td>
+
+          {% if request.user in chairs or request.user in event.pc_members.all %}
+            <td style="min-width:150px">
+                {% for review in general_reviews %}
+                {% if review.paper == paper %}
+                    <p> {{ review.get_decision_display }} by {{ review.reviewer.profile.first_name }}</p>
+                {% endif %}
+            {% endfor %}
+            </td>
+          {% endif %}
+          {% if request.user in chairs %}
+            <td>
+            {% if event.is_open %}
+              {% if paper.status == 1 %}
+                <p><a href="{% url 'set_paper_status' pk=paper.pk status="2" %}" class="btn-sm btn-success" role="button">Accept</a></p>
+                <p><a href="{% url 'set_paper_status' pk=paper.pk status="3" %}" class="btn-sm btn-danger" role="button">Reject</a></p>
+              {% elif paper.status == 0 %}
+                  <span class="label label-default">Waiting for Reviews</span>
+              {% else %}
+                  <p><a href="{% url 'set_paper_status' pk=paper.pk status="0" %}" class="btn-sm btn-info">Cancel</a></p>
+
+              {% endif %}
+            {% else %}
+                Event is closed!
+            {% endif %}
+            </td>
+          {% endif %}
+        {% endfor %}
+
+      </tr>
+    </table>
+{% else %}
+<div class="panel-body">
+    <h4>No Paper Has Been Submited Yet!</h4>
+</div>{% endif %}
+</div>
+
+
+{% if request.user.is_staff or request.user in chairs %}
+<ul class="list-group">
+<li class="list-group-item"><h3>PC Members <small>You can choose chairs from this list</small></h3></li>
+<li class="list-group-item">
+  {% for u in pc_members %}
+      {% if not u in chairs %}
+        {{u.username}}
+          {% if request.user.is_staff %}
+          <a href="{% url 'add_chair' pk=event.id user_id=u.id %}" class="label label-success"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add as Chair</a>
+          {% endif %}
+      {% endif %}
+  {% endfor %}
+</li>
+</ul>
+{% endif %}
+
+{% if request.user.is_staff %}
+<ul class="list-group">
+<li class="list-group-item"><h3>Users <small>You can choose PC Members from this list</small></h3></li>
+<li class="list-group-item">
+    {% for u in users %}
+          {{u.user.username}}
+          {% if not u.user in pc_members %}
+          <a href="{% url 'add_pc_member' pk=event.id user_id=u.user.id %}" class="label label-success"> <span class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+          {% else %}
+          <a href="{% url 'remove_pc_member' pk=event.id user_id=u.user.id %}" class="label label-danger"> <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+          {% endif %}
+    {% endfor %}
+</li>
+</ul>
+{% endif %}
+
+
+
+{% endblock %}
+
+{% block sidebar %}
+
+<ul class="list-group">
+<li class="list-group-item"><h3>Chairs</h3></li>
+    {% if chairs %}
+        {% for c in chairs %}
+            <li class="list-group-item"><a href="{% url "profile" slug=c  %}" >{{ c }}</a>
+              {% if request.user.is_staff %}
+                  <a href="{% url 'remove_chair' pk=event.id user_id=c.id %}" class="label label-danger"><span class="glyphicon glyphicon-remove"></span> Remove from Chairs</a>
+              {% endif %}
+        {% endfor %}
+    {% else %}
+      <li class="list-group-item">No Chairs Selected!</li>
+    {% endif %}
+</ul>
+
+{% endblock %}

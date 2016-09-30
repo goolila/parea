@@ -1,0 +1,14 @@
+db.sqlite3
+*.pyc
+*.DS_Store
+!conference/migrations/__init__.py
+conference/migrations/*
+conference/utils.py
+!annotation/migrations/__init__.py
+annotation/migrations/*
+!media/papers/*
+!media/pre_load_data
+media/*
+*.DS_Store
+.idea*
+*.svg

@@ -1,0 +1,143 @@
+{% extends "base12.html" %}
+{% load humanize %}
+
+{% block content %}
+
+<head>
+<title>PAREA | {{ paper.title }}</title>
+</head>
+
+<div clas="row">
+  <div class="col-md-8">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+          <h3>{{ paper.title }}</h3>
+      </div>
+
+      <ul class="list-group">
+        <li class="list-group-item"><b>Event: </b><a href={% url 'event_detail' pk=paper.event.pk slug=paper.event.slug %}>{{ paper.event.name }}</a></li>
+        <li class="list-group-item"><b>Authors: </b>
+          {% if paper.authors.all %}
+            {% for author in paper.authors.all %}
+              <a href="{% url 'profile' slug=author.username %}">{{ author.username }}</a>
+            {% endfor %}
+          {% else %}
+            <a href="{% url 'profile' slug=paper.submited_by.username %}">{{ paper.submited_by }}</a>
+          {% endif %}
+        </li>
+        <li class="list-group-item"><b>Submitted By: </b><a href="{% url 'profile' slug=paper.submited_by %}">{{ paper.submited_by }}</a> at {{ paper.submit_date }}</li>
+        <li class="list-group-item"><b>Status: </b> {{ paper.get_status_display }}
+          {% if request.user in chairs and paper.status == 2 or paper.status == 3 %}
+            <a href="{% url 'set_paper_status' pk=paper.pk status="0" %}"class="label label-default">Cancel</a>
+          {% endif %}
+        </li>
+        <li class="list-group-item"><b>Reviewers: </b>
+        {% if reviewers %}
+            {% for r in reviewers %}
+                {{r}}
+                {% if request.user in chairs %}
+                  <a href="{% url 'remove_reviewer' pk=paper.id user_id=r.id %}" class="label label-danger"><span class="glyphicon glyphicon-remove"></span> Remove</a>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            No reviewers has been assigned to this paper yet.
+        {% endif %}
+        </li>
+
+        {% if request.user in chairs %}
+        <li class="list-group-item"><b>Select reviewers for this paper:</b>
+        {% for pcmember in pcmembers %}
+          {% if not pcmember in reviewers %}
+            {{ pcmember }}
+            <a href="{% url 'add_reviewer' pk=paper.id user_id=pcmember.id %}" class="label label-success"><span class="glyphicon glyphicon-plus"></span> Add</a>
+          {% endif %}
+        {% endfor %}
+        </li>
+        {% endif %}
+        {% if request.user in pcmembers %}
+          <li class="list-group-item"><b>Paper's content :</b> <a href="{% url 'paper_review' pk=paper.id %}"> {{ paper.title }}</a></li>
+        {% endif %}
+
+      </ul>
+    </div>
+
+
+  </div>
+
+  <div class="col-md-4">
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <h3>General Reviews</h3>
+      </div>
+      <!-- Table -->
+      {% if general_reviews.count > 0 %}
+        {% for gr in general_reviews %}
+          {% if gr.paper == paper %}
+            <li class="list-group-item"><b>{{ gr.get_decision_display }} - {{ gr.get_rate_display }} </b> : {{ gr.comment }} by {{gr.reviewer}}
+              {% if not paper.locked%}
+                {% if request.user == gr.reviewer %}
+                  <a href="{% url 'remove_general_review' pk=gr.pk paper_id=paper.pk %}" class="label label-danger"><span class="glyphicon glyphicon-remove"></span></a>
+                {% endif %}
+              {% endif %}
+          {% endif %}
+            </li>
+        {% endfor %}
+      {% else %}
+        <li class="list-group-item"><h4> No reviews yet! </h4></li>
+      {% endif %}
+
+      {% if request.user in reviewers %}
+        {% if not did_general_review %}
+          <li class="list-group-item">
+            <form method="post" action="">
+              {% csrf_token %}
+              {{ form.as_p }}
+              <input type="submit" value="Add" class="btn btn-info">
+            </form>
+          </li>
+        {% endif %}
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+
+{% if request.user in chairs or request.user in reviewers or request.user.is_staff %}
+
+<div clas="row">
+  <div class="col-md-12">
+    <div class="panel panel-warning">
+      <div class="panel-heading">
+          <h3>Annotations</h3>
+      </div>
+      <!-- Table -->
+      {% if request.user in chairs or request.user in reviewers or request.user.is_staff %}
+        {% if annotations.count > 0 %}
+          <table class="table">
+            <tr>
+              <th>Quote</th>
+              <th>Comment</th>
+              <th>By</th>
+              <th>At</th>
+            </tr>
+            {% for a in annotations %}
+                <tr>
+                  <td style="min-width: 350px;">{{ a.quote|slice:":250" }}</td>
+                  <td style="min-width: 350px">{{ a.text|slice:":250" }}</td>
+                  <td style="min-width: 150px">{{ a.user_username }}</td>
+                  <td style="min-width: 150px">{{ a.created|naturaltime }}</td>
+                </tr>
+            {% endfor %}
+          </table>
+        {% else %}
+          <li class="list-group-item"><h4>No annotations yet!</h4></li>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+{% endblock %}

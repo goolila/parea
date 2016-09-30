@@ -1,0 +1,67 @@
+{% extends "base12.html" %}
+
+
+{% block content %}
+<head>
+  <title>{{ object.username }}'s Profile</title>
+</head>
+
+<h2>
+  {{ object.username }}'s Profile
+  {% if object.profile.first_name and object.profile.last_name %}
+      <small>{{ object.profile.first_name }} {{ object.profile.last_name }}</small>
+      {% if object.username == request.user.username %}
+      <small><a href='{% url "edit_profile" slug=object.username %}'>Edit your real name</a></small>
+      {% endif %}
+  {% else %}
+    {% if object.username == request.user.username %}
+      <small><a href='{% url "edit_profile" slug=object.username %}'>Add your real name</a></small>
+    {% endif %}
+  {% endif %}
+</h2>
+
+
+<div clas="row">
+  <div class="col-md-12">
+    {% if chair_of %}
+        <h4>{{ object.profile.first_name }} {{ object.profile.last_name }} is Chair of:</h4>
+        <ul>
+        {% for e in chair_of %}
+            <li><a href="{% url 'event_detail' pk=e.event.id slug=e.event.slug %}"}>{{ e.event }}</a> </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+  </div>
+</div>
+
+<div clas="row">
+  <div class="col-md-12">
+    {% if papers %}
+        <h4>Papers:</h4>
+            <ul>
+            {% for p in papers %}
+                <li><a href="{% url 'paper_detail' pk=p.id slug=p.slug %}">{{ p.title }}</a></li>
+            {% endfor %}
+            </ul>
+    {% endif %}
+  </div>
+</div>
+
+<div clas="row">
+  <div class="col-md-12">
+    {% if reviewer_of %}
+        <h4>{{ object.profile.first_name }} {{ object.profile.last_name }} is Reviewer of:</h4>
+        <ul>
+        {% for p in reviewer_of %}
+            <li><a href="{% url 'paper_detail' pk=p.paper.id slug=p.paper.slug %}">{{ p.paper.title }}</a></li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+  </div>
+</div>
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block sidebar%}
+<head>
+  <title>PAREA | Events</title>
+</head>
+
+<ul class="list-group">
+  <li class="list-group-item"><h3>Open Events</h3></li>
+  {% if object_list %}
+    {% for event in object_list %}
+        <li class="list-group-item"><a href="{% url 'event_detail' pk=event.id slug=event.slug %}">{{ event.name }}</a>
+        <small>( {{ event.acronym }} )</small></li>
+    {% endfor %}
+  {% else %}
+    <li class="list-group-item">No Open Events!</li>
+  {% endif %}
+</ul>
+
+<ul class="list-group">
+  <li class="list-group-item"><h3>Closed Events</h3></li>
+  {% if closed_events.count > 0  %}
+    {% for event in closed_events %}
+        <li class="list-group-item"><a href="{% url 'event_detail' pk=event.id slug=event.slug %}">{{ event.name }}</a>
+        <small>( {{ event.acronym }} )</small></li>
+    {% endfor %}
+  {% else %}
+    <li class="list-group-item">No Closed Events!</li>
+  {% endif %}
+</ul>
+
+{% if request.user.is_staff %}
+<ul class="list-group">
+  <li class="list-group-item"><h3 style="color: grey;"><i class="glyphicon glyphicon-cog"></i>Administration</h3></li>
+    <li class="list-group-item"><a href="{% url 'event_create' %}">Create Event</a></li>
+    <li class="list-group-item"><a href="{% url 'import_users' %}">Import Users </a></li>
+    <li class="list-group-item"><a href="{% url 'import_events' %}">Import Events </a></li>
+</ul>
+{% endif %}
+
+{% endblock %}
+
+{% block content%}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<div class="panel panel-info">
+  <div class="panel-heading">
+      <h3>Recent Papers</h3>
+  </div>
+
+  <!-- Table -->
+  {% if papers.count > 0 %}
+    <table class="table">
+      <tr>
+        <th>Paper Title</th>
+        <th>Event</th>
+      </tr>
+        {% for paper in papers %}
+          <tr>
+          <td style="min-width: 350px;"><a href="{% url 'paper_detail' pk=paper.id slug=paper.slug %}">{{ paper.title }}</a></td>
+          <td style="min-width: 150px;"><a href="{% url 'event_detail' pk=paper.event.id slug=paper.event.slug %}">{{ paper.event.acronym }}</a></td>
+        {% endfor %}
+        </tr>
+      </table>
+    {% else %}
+      <div class="panel-body">
+          <h4>No Paper Has Been Submited Yet!</h4>
+      </div>
+    {% endif %}
+</div>
+
+
+<h3>Users</h3>
+
+{% for u in users %}
+  <a href="{% url 'profile' slug=u.user %}">{{ u.user }}  </a>
+{% endfor %}
+
+{% endblock%}

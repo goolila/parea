@@ -1,0 +1,72 @@
+{% extends "base12.html" %}
+
+{% block content %}
+<head>
+  <title>PAREA | Submit Paper</title>
+</head>
+
+
+<div clas="row">
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+          <h3>Create new event</h3>
+      </div>
+
+      <div class="panel-body">
+        <p>Dear {{ request.user}}, you can submit your paper in RASH format here.</p>
+        <small>All fields are required</small>
+      </div>
+
+      <div class="panel-body">
+        <form method="post" action="" enctype="multipart/form-data" class="form-horizontal" role="form">
+        {% csrf_token %}
+        {% if form.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        {% endif %}
+          <label for="id_title" class="control-label">Title: </label>
+          <div class="input-group">
+            <input id="id_title" type="text" class="form-control" maxlength="250" name="title">
+          </div>
+
+          <label for="id_abstract" class="control-label">Abstract: </label>
+          <div class="input-group">
+            <textarea id="id_abstract" class="form-control" type="text" cols="50" rows="5" id="id_abstract" maxlength="500" name="abstract" ></textarea>
+          </div>
+
+          <label for="id_event" class="control-label">Event: </label>
+          <div class="input-group">
+            <select class="form-control" id="id_event" name="event">
+              <option value="" selected="selected">---------</option>
+              {% for event in events %}
+              <option value={{ event.id }}>{{ event.acronym }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <label for="id_paper_file" class="control-label">Paper File: </label>
+          <div style="margin-bottom: 25px" class="input-group">
+            <input id="id_paper_file" name="paper_file" type="file">
+          </div>
+
+          <input id="btn-login" class="btn btn-info" type="submit" value="Submit Paper" />
+          <input type="hidden" name="next" value="{{ next }}" />
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+<form enctype="multipart/form-data" method="post" action="">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type="submit" value="Add">
+</form>

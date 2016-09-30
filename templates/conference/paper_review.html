@@ -1,0 +1,58 @@
+{% extends "base12.html" %}
+{% load static %}
+
+{% block content %}
+
+<head>
+<title>{{ paper.title }}</title>
+</head>
+
+    {% if request.user in reviewers %}
+      {% if not paper.locked%}
+        <h4>You are reviewer of this paper, start selecting text and comment on selected parts:</h4>
+      {% else %}
+        <h4>Paper is {{ paper.get_status_display }} & locked. You can not edit your annotations any more!</h4>
+      {% endif %}
+    {% elif request.user in chairs and not request.user in reviewers %}
+        <h4>You can only read annotations since you're chair of the event this paper submitted to!</h4>
+    {% endif %}
+
+
+    <h2><a href="{% url 'paper_detail' pk=paper.pk slug=paper.slug %}">{{ paper.title }}</a></h2>
+    <p><b>Event: </b> <a href={% url 'event_detail' pk=paper.event.pk slug=paper.event.slug %}>{{ paper.event.name }}</a> </p>
+
+    {#  Body of submitted paper  #}
+    {% autoescape off %}{{ parsed }}{% endautoescape off %}
+
+    {% if not paper.locked%}
+      {% if request.user in reviewers %}
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        <script type="text/javascript" src="{% static "js/annotator.min.js" %}"></script>
+        <script type="text/javascript">
+            var user = "{{ request.user.id }}";
+
+            var app = new annotator.App();
+            app.include(annotator.ui.main);
+            app.include(annotator.storage.http, {
+                prefix: window.location.origin,
+            });
+            app.include(function() {
+                return {
+                    beforeAnnotationCreated: function (annotation) {
+                        annotation.uri = window.location.href;
+                        annotation.user_id = user;
+                    }
+                }
+            });
+            app.start().then(function () {
+                app.annotations.load({
+                    uri: window.location.href,
+                    user_id: user,
+                });
+            });
+        </script>
+      {% endif %}
+    {% endif %}
+
+
+{% endblock %}

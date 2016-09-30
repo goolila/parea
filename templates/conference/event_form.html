@@ -1,0 +1,54 @@
+{% extends "base12.html" %}
+
+
+{% block content %}
+<head>
+  <title>PAREA | Create Event</title>
+</head>
+
+<div clas="row">
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        {% if event %}
+          <h3> Edit {{ event.name }}</h3>
+        {% else %}
+          <h3>Create new event</h3>
+        {% endif %}
+      </div>
+
+      <div class="panel-body">
+        {% if event %}
+          <p>You can edit event name and acronym here. </p>
+        {% else %}
+          <p>Choose a name and acronym for your event. </p>
+        {% endif %}
+      </div>
+
+      <div class="panel-body">
+        <form method="post" action="" enctype="multipart/form-data" class="form-horizontal" role="form">
+        {% csrf_token %}
+          <label for="id_name" class="control-label">Event's Name:</label>
+          <div class="input-group">
+            <input id="id_name" name="name" type="text" placeholder={{ event.name }}>
+          </div>
+
+          <label for="id_acronym" class="control-label">Acronym:</label>
+          <div style="margin-bottom: 25px" class="input-group">
+            <input id="id_acronym" type="text" id="id_abstract" maxlength="500" name="acronym" placeholder={{ event.acronym }}></input>
+          </div>
+
+          {% if event %}
+            <input id="btn-login" class="btn btn-info" type="submit" value="Save Changes" />
+          {% else %}
+            <input id="btn-login" class="btn btn-info" type="submit" value="Create Event" />
+          {% endif %}
+          <input type="hidden" name="next" value="{{ next }}" />
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
