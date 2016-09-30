@@ -26,4 +26,4 @@ Create a superuser
 Run server
 `./manage.py runserver`
 
-* utils.py is excluded temporary!
+* utils.py is excluded temporarily!

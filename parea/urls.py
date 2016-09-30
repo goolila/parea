@@ -10,7 +10,7 @@ from conference.views import ProfileDetailView, UserProfileEditView, HomeListVie
 from conference.views import EventCreateView, EventDetailView, EventUpdateView, EventsView
 from conference.views import CloseEventView, ReopenEventView, DownloadEventZippedView
 from conference.views import PaperCreateView, PaperDetailView, PaperReview
-from conference.views import AddRevView, RemoveRevView
+from conference.views import AddReviewerView, RemoveReviewerView
 from conference.views import AddChair, RemoveChair, AddPCMember, RemovePCMember
 from conference.views import RemoveGeneralReview, custom_login
 from conference.views import SetPaperStatus, ImportUsersView, ImportEventsView
@@ -51,8 +51,8 @@ urlpatterns = [
     url(r'^event/addpcmember/(?P<pk>\d+)/(?P<user_id>\d+)/$', AddPCMember, name='add_pc_member'),
     url(r'^event/removepcmember/(?P<pk>\d+)/(?P<user_id>\d+)/$', RemovePCMember, name='remove_pc_member'),
 
-    url(r'^paper/addreviewer/(?P<pk>\d+)/(?P<user_id>\d+)/$', AddRevView, name='add_reviewer'),
-    url(r'^paper/removereviewer/(?P<pk>\d+)/(?P<user_id>\d+)/$', RemoveRevView, name='remove_reviewer'),
+    url(r'^paper/addreviewer/(?P<pk>\d+)/(?P<user_id>\d+)/$', AddReviewerView, name='add_reviewer'),
+    url(r'^paper/removereviewer/(?P<pk>\d+)/(?P<user_id>\d+)/$', RemoveReviewerView, name='remove_reviewer'),
 
     url(r'^general-review/remove/(?P<pk>\d+)/(?P<paper_id>\d+)/$', RemoveGeneralReview, name='remove_general_review'),
     url(r'^set-status/paper/(?P<pk>\d+)/(?P<status>\d+)/$', SetPaperStatus, name='set_paper_status'),

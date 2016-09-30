@@ -7,14 +7,20 @@
 <title>{{ paper.title }}</title>
 </head>
 
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
     {% if request.user in reviewers %}
       {% if not paper.locked%}
-        <h4>You are reviewer of this paper, start selecting text and comment on selected parts:</h4>
+        <h4 class="alert alert-info" role="alert">You are reviewer of this paper, start selecting text and comment on selected parts:</h4>
       {% else %}
-        <h4>Paper is {{ paper.get_status_display }} & locked. You can not edit your annotations any more!</h4>
+        <h4 class="alert alert-danger" role="alert">Paper is {{ paper.get_status_display }} & locked. You can not edit your annotations any more!</h4>
       {% endif %}
     {% elif request.user in chairs and not request.user in reviewers %}
-        <h4>You can only read annotations since you're chair of the event this paper submitted to!</h4>
+        <h4 class="alert alert-warning" role="alert">You can only read annotations since you're chair of the event this paper submitted to!</h4>
     {% endif %}
 
 

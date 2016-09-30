@@ -7,6 +7,12 @@
 <title>PAREA | {{ paper.title }}</title>
 </head>
 
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
 <div clas="row">
   <div class="col-md-8">
     <div class="panel panel-default">
@@ -54,7 +60,7 @@
         {% endfor %}
         </li>
         {% endif %}
-        {% if request.user in pcmembers %}
+        {% if request.user in pcmembers or request.user in chairs %}
           <li class="list-group-item"><b>Paper's content :</b> <a href="{% url 'paper_review' pk=paper.id %}"> {{ paper.title }}</a></li>
         {% endif %}
 

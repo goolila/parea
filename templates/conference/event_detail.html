@@ -106,7 +106,7 @@
 <li class="list-group-item">
   {% for u in pc_members %}
       {% if not u in chairs %}
-        {{u.username}}
+        <a href="{% url 'profile' slug=u.username %}">{{ u.username }}</a>
           {% if request.user.is_staff %}
           <a href="{% url 'add_chair' pk=event.id user_id=u.id %}" class="label label-success"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add as Chair</a>
           {% endif %}

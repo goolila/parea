@@ -32,7 +32,7 @@ class StaticMixin(object):
 class HomeListView(StaticMixin, ListView):
     model = Event
     queryset = Event.objects.filter(event_status__exact=0)
-    paginate_by = 10
+    paginate_by = 5
 
     def get_context_data(self, **kwargs):
         context = super(HomeListView, self).get_context_data(**kwargs)
@@ -131,7 +131,7 @@ class PaperDetailView(FormMixin, DetailView):
         context['did_general_review'] = did_general_review
 
         # change in production!
-        uri = "http://127.0.0.1:8000/review/paper/%s/" %self.object.pk
+        uri = "%s/%s/" %(settings.BASE_URL, self.object.pk)
         context['annotations'] = Annotation.objects.filter(uri=uri)
         return context
 
@@ -158,33 +158,39 @@ def RemoveGeneralReview(request, pk, paper_id):
     review = get_object_or_404(Review, pk=pk)
     paper = get_object_or_404(Paper, pk=paper_id)
     next = get_next(request, paper)
-    review.delete()
-    return HttpResponseRedirect(next)
 
+    if review.reviewer == request.user:
+        review.delete()
+        messages.warning(request, "You removed your general review on this paper! Paper can not be decided until all reviewers have not added their reviews!")
+        return HttpResponseRedirect(next)
+    else:
+        raise PermissionDenied
 def SetPaperStatus(request, pk, status):
     paper = get_object_or_404(Paper, pk=pk)
     event = paper.event
     user = request.user
+    next_redirect = get_next(request, paper)
 
     if user in event.chairs.all():
-        is_chair = True
+        if not paper.locked:
+            if status == "2":
+                paper.set_accepted()
+                paper.decided_by = request.user
+                messages.info(request, "You've accepted a paper! You or other chairs can change this decision before closure of this event.")
+            elif status == "3":
+                paper.set_rejected()
+                paper.decided_by = request.user
+                messages.info(request, "You've rejected a paper! You or other chairs can change this decision before closure of this event.")
+            elif status == "0":
+                paper.set_under_review()
+                paper.decided_by = None
+                messages.warning(request, "You've cancelled a decision! To close this event, all papers should be decided!")
+            paper.save()
+        else:
+            messages.warning(request, "The event is closed, you can not change your decision!")
+        return HttpResponseRedirect(next_redirect)
     else:
         raise PermissionDenied
-
-    next_redirect = get_next(request, event)
-
-    if is_chair:
-        if status == "2":
-            paper.set_accepted()
-            paper.decided_by = request.user
-        elif status == "3":
-            paper.set_rejected()
-            paper.decided_by = request.user
-        elif status == "0":
-            paper.set_under_review()
-            paper.decided_by = None
-        paper.save()
-    return HttpResponseRedirect(next_redirect)
 
 def PaperReview(request, pk):
     paper = get_object_or_404(Paper, pk=pk)
@@ -193,6 +199,9 @@ def PaperReview(request, pk):
     # html = bs4.BeautifulSoup(parsed, "html.parser")
     # body = html.find('body')
     # paper_file.close()
+
+    if not ( request.user in paper.event.pc_members.all() or request.user in paper.event.chairs.all() ):
+        raise PermissionDenied
 
     htmlparser = et.HTMLParser()
     tree = et.parse(paper.paper_file.path, htmlparser)
@@ -228,37 +237,43 @@ class UserProfileEditView(UpdateView):
     def get_success_url(self):
         return reverse("profile", kwargs={'slug': self.request.user})
 
-def AddRevView(request, pk, user_id):
+def AddReviewerView(request, pk, user_id):
     paper = get_object_or_404(Paper, pk=pk)
     user = get_object_or_404(Profile, pk=user_id).user
     next = get_next(request, paper)
 
-    if user in paper.reviewers.all():
-        is_reviewer = True
+    if request.user in paper.event.chairs.all():
+        if user not in paper.reviewers.all():
+            if not paper.locked:
+                m = Reviewer(user=user, paper=paper)
+                m.save()
+                messages.success(request, "You've added a reviewer to this paper!")
+            else:
+                messages.warning(request, "Paper is closed now. You'd better not edit reviewers!")
+        else:
+            messages.warning(request, "This user is already in reviewers!")
+        return HttpResponseRedirect(next)
     else:
         raise PermissionDenied
 
-    if not is_reviewer:
-        m = Reviewer(user=user, paper=paper)
-        m.save()
-    else:
-        print "is already a reviewer of this paper!"
-    return HttpResponseRedirect(next)
-
-def RemoveRevView(request, pk, user_id):
+def RemoveReviewerView(request, pk, user_id):
     paper = get_object_or_404(Paper, pk=pk)
     user = get_object_or_404(Profile, pk=user_id).user
     next = get_next(request, paper)
 
-    if user in paper.reviewers.all():
-        is_reviewer = True
+    if request.user in paper.event.chairs.all():
+        if user in paper.reviewers.all():
+            if not paper.locked:
+                m = Reviewer.objects.get(user=user, paper=paper)
+                m.delete()
+                messages.success(request, "You've removed a reviewer from this paper!")
+            else:
+                messages.warning(request, "Paper is closed now. You'd better not edit reviewers!")
+        else:
+            messages.warning(request, "This user is not in reviewers!")
+        return HttpResponseRedirect(next)
     else:
         raise PermissionDenied
-
-    if is_reviewer:
-        m = Reviewer.objects.get(user=user, paper=paper)
-        m.delete()
-    return HttpResponseRedirect(next)
 
 def AddChair(request, pk, user_id):
     event = get_object_or_404(Event, pk=pk)
@@ -273,7 +288,6 @@ def AddChair(request, pk, user_id):
         return HttpResponseRedirect(next)
     else:
         raise PermissionDenied
-
 
 def RemoveChair(request, pk, user_id):
     event = get_object_or_404(Event, pk=pk)
@@ -387,7 +401,7 @@ def get_next(request, item):
     return next
 
 def EventsView(request):
-    events = Event.objects.all()
+    events = Event.objects.all().order_by('-create_date')
     open_events = Event.objects.filter(event_status__exact=0)
     closed_events = Event.objects.filter(event_status__exact=1)
     context = {'events':events, 'open_events':open_events, 'closed_events':closed_events}

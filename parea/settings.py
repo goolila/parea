@@ -32,6 +32,8 @@ LOGIN_URL           = reverse_lazy('login')
 LOGIN_REDIRECT_URL  = reverse_lazy('home')
 LOGOUT_URL          = reverse_lazy('logout')
 
+BASE_URL = 'http://127.0.0.1:8000/review/paper'
+
 
 # Application definition
 
@@ -69,9 +71,7 @@ ROOT_URLCONF = 'parea.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),
-                 os.path.join(BASE_DIR, 'media/papers/user_id_4'),]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')] ,
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
